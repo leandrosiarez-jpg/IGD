@@ -1,6 +1,6 @@
-# Carta Digital Pastel
+# Carta Digital
 
-Este proyecto es una carta digital interactiva, ideal para restaurantes y cafeterías, con diseño pastel y bloques tipo “hoja” para cada sección del menú.
+Este proyecto es una carta digital interactiva, ideal para restaurantes y cafeterías, con diseño de bloques tipo “hoja” para cada sección del menú.
 
 ## Características
 
@@ -27,7 +27,3 @@ Este proyecto es una carta digital interactiva, ideal para restaurantes y cafete
 ## Créditos
 
 Hecho por leandrosiarez-jpg.
-
----
-
-¿Quieres agregar instrucciones de despliegue, dependencias o imágenes? ¡Avísame!
