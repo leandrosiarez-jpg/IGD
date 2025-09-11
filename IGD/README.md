@@ -1,12 +1,29 @@
-# React + Vite
+# Carta Digital
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este proyecto es una carta digital interactiva, ideal para restaurantes y cafeterías, con diseño pastel y bloques tipo “hoja” para cada sección del menú.
 
-Currently, two official plugins are available:
+## Características
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Navegación entre bloques/secciones del menú (Entradas, Principales, Postres, Bebidas, etc.)
+- Precios, descripciones y nombres de bloque editables
+- Animaciones suaves al cambiar de bloque
+- Diseño responsive, adaptado para móvil y escritorio
+- Fácil de ampliar y conectar con base de datos o archivo JSON
 
-## Expanding the ESLint configuration
+## Cómo usar
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Clona este repositorio:
+   ```sh
+   git clone https://github.com/leandrosiarez-jpg/IGD.git
+   ```
+2. Abre `index.html` en tu navegador.
+
+## Personalización
+
+- Edita el archivo `script.js` para agregar, quitar o modificar bloques y alimentos.
+- Cambia los colores pastel en `style.css` según tus preferencias.
+- Puedes conectar con una base de datos o archivo externo para más flexibilidad.
+
+## Créditos
+
+Hecho por [leandrosiarez-jpg](https://github.com/leandrosiarez-jpg).
