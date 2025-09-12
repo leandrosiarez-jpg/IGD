@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button, Spinner } from "react-bootstrap";
+import { Card, Button, Spinner, Row, Col } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css"; // Asegúrate de que Bootstrap CSS esté importado
 
 const Menu = () => {
   const [items, setItems] = useState([]);
-  const [index, setIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const itemsPerPage = 4;
+
   useEffect(() => {
-    // Aquí es donde se conecta al backend para obtener los datos del menú.
     fetch("http://localhost:3001/api/menu")
       .then((response) => {
         if (!response.ok) {
@@ -26,8 +28,18 @@ const Menu = () => {
       });
   }, []);
 
-  const siguiente = () => setIndex((prev) => (prev + 1) % items.length);
-  const anterior = () => setIndex((prev) => (prev - 1 + items.length) % items.length);
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+
+  const nextPage = () => {
+    setCurrentPage((prev) => (prev + 1) % totalPages);
+  };
+
+  const prevPage = () => {
+    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
+  };
+
+  const startIndex = currentPage * itemsPerPage;
+  const currentItems = items.slice(startIndex, startIndex + itemsPerPage);
 
   if (loading) {
     return (
@@ -49,31 +61,54 @@ const Menu = () => {
   }
 
   if (items.length === 0) {
-    return <div className="text-center mt-5">No hay items en el menú.</div>;
+    return <div className="text-center mt-5">No hay ítems en el menú.</div>;
   }
 
   return (
-    <div className="d-flex flex-column align-items-center mt-4 px-3">
-      <Card style={{ width: "100%", maxWidth: "22rem" }} className="shadow-lg rounded-4">
-        <Card.Img
-          variant="top"
-          src={items[index].img}
-          className="rounded-top-4"
-          alt={items[index].nombre}
-        />
-        <Card.Body className="text-center">
-          <Card.Title className="fw-bold fs-4">{items[index].nombre}</Card.Title>
-          <Card.Text className="text-muted fs-5">{items[index].precio}</Card.Text>
-        </Card.Body>
-      </Card>
-
-      <div className="mt-4 d-flex gap-3">
-        <Button variant="outline-dark" size="lg" onClick={anterior}>
-          ◀
-        </Button>
-        <Button variant="dark" size="lg" onClick={siguiente}>
-          ▶
-        </Button>
+    <div
+      className="d-flex flex-column align-items-center p-4"
+      style={{
+        backgroundColor: "#e9ecef",
+        minHeight: "100vh",
+        transition: "background-color 0.5s ease-in-out",
+      }}
+    >
+      <h1 className="text-center mb-4">Menú Digital</h1>
+      <div className="d-flex flex-column align-items-center w-100" style={{ maxWidth: "600px" }}>
+        <div style={{ padding: "1rem", backgroundColor: "#f8f9fa", borderRadius: "10px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)", minHeight: "600px" }}>
+          <Row xs={1} md={2} className="g-4">
+            {currentItems.map((item) => (
+              <Col key={item.id}>
+                <Card className="shadow-sm h-100">
+                  <Card.Img
+                    variant="top"
+                    src={item.img}
+                    alt={item.nombre}
+                    style={{ height: "180px", objectFit: "cover" }}
+                  />
+                  <Card.Body className="text-center d-flex flex-column justify-content-between">
+                    <div>
+                      <Card.Title className="fw-bold fs-5">{item.nombre}</Card.Title>
+                      <Card.Text className="text-muted fs-6">{item.precio}</Card.Text>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </div>
+        
+        {/* Botones de navegación integrados debajo de los bloques */}
+        {totalPages > 1 && (
+          <div className="mt-4 d-flex justify-content-center gap-3">
+            <Button variant="outline-secondary" size="lg" onClick={prevPage}>
+              ◀
+            </Button>
+            <Button variant="secondary" size="lg" onClick={nextPage}>
+              ▶
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
