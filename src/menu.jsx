@@ -1,41 +1,53 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button, Spinner, Row, Col } from "react-bootstrap";
-import "bootstrap/dist/css/bootstrap.min.css"; // Asegúrate de que Bootstrap CSS esté importado
+import { Spinner, Row } from "react-bootstrap";
+import { getMenuItems } from "./services/menuService";
+import MenuItem from "./components/MenuItem";
+import MenuControls from "./components/MenuControls";
 
 const Menu = () => {
   const [items, setItems] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [animating, setAnimating] = useState(false); // Nuevo estado para la animación
 
   const itemsPerPage = 4;
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/menu")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Error al cargar el menú.");
-        }
-        return response.json();
-      })
-      .then((data) => {
+    const fetchItems = async () => {
+      try {
+        const data = await getMenuItems();
         setItems(data);
-        setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         setError(err.message);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    fetchItems();
   }, []);
 
   const totalPages = Math.ceil(items.length / itemsPerPage);
 
+  // Función para manejar el cambio de página con animación
+  const handlePageChange = (newPage) => {
+    if (animating) return; // Evita cambios rápidos mientras se anima
+
+    setAnimating(true); // Inicia la animación de salida
+    setTimeout(() => {
+      setCurrentPage(newPage); // Cambia la página después de que la animación de salida empiece
+      setAnimating(false); // Termina la animación (la de entrada se maneja en el CSS)
+    }, 300); // Duración de la animación de desvanecimiento (0.3s)
+  };
+
   const nextPage = () => {
-    setCurrentPage((prev) => (prev + 1) % totalPages);
+    const newPage = (currentPage + 1) % totalPages;
+    handlePageChange(newPage);
   };
 
   const prevPage = () => {
-    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
+    const newPage = (currentPage - 1 + totalPages) % totalPages;
+    handlePageChange(newPage);
   };
 
   const startIndex = currentPage * itemsPerPage;
@@ -74,41 +86,38 @@ const Menu = () => {
       }}
     >
       <h1 className="text-center mb-4">Menú Digital</h1>
-      <div className="d-flex flex-column align-items-center w-100" style={{ maxWidth: "600px" }}>
-        <div style={{ padding: "1rem", backgroundColor: "#f8f9fa", borderRadius: "10px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)", minHeight: "600px" }}>
+      <div
+        style={{
+          padding: "1rem",
+          backgroundColor: "#f8f9fa",
+          borderRadius: "10px",
+          boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+          minHeight: "600px", // Mantener una altura mínima para evitar saltos
+          width: "100%",
+          maxWidth: "600px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between", // Empuja los botones abajo
+        }}
+      >
+        <div
+          className={`menu-page-transition ${animating ? "fade-out" : "fade-in"}`}
+          style={{ width: "100%" }}
+        >
           <Row xs={1} md={2} className="g-4">
             {currentItems.map((item) => (
-              <Col key={item.id}>
-                <Card className="shadow-sm h-100">
-                  <Card.Img
-                    variant="top"
-                    src={item.img}
-                    alt={item.nombre}
-                    style={{ height: "180px", objectFit: "cover" }}
-                  />
-                  <Card.Body className="text-center d-flex flex-column justify-content-between">
-                    <div>
-                      <Card.Title className="fw-bold fs-5">{item.nombre}</Card.Title>
-                      <Card.Text className="text-muted fs-6">{item.precio}</Card.Text>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
+              <MenuItem key={item.id} item={item} />
             ))}
           </Row>
         </div>
-        
-        {/* Botones de navegación integrados debajo de los bloques */}
-        {totalPages > 1 && (
-          <div className="mt-4 d-flex justify-content-center gap-3">
-            <Button variant="outline-secondary" size="lg" onClick={prevPage}>
-              ◀
-            </Button>
-            <Button variant="secondary" size="lg" onClick={nextPage}>
-              ▶
-            </Button>
-          </div>
-        )}
+
+        {/* Los controles ahora son parte del contenedor de página */}
+        <MenuControls
+          totalPages={totalPages}
+          currentPage={currentPage}
+          nextPage={nextPage}
+          prevPage={prevPage}
+        />
       </div>
     </div>
   );
