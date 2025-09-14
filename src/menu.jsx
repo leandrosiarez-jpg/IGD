@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Spinner, Row } from "react-bootstrap";
 import { getMenuItems } from "./services/menuService";
 import MenuItem from "./components/MenuItem";
-import MenuControls from "./components/MenuControls";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Menu = () => {
@@ -30,7 +29,7 @@ const Menu = () => {
   const totalPages = Math.ceil(items.length / itemsPerPage);
 
   const handleDragEnd = (event, info) => {
-    const dragThreshold = 50; // Pixels to trigger a page change
+    const dragThreshold = 100; // Pixels to trigger a page change
     const dragDirection = info.offset.x;
 
     if (dragDirection > dragThreshold) {
@@ -65,20 +64,20 @@ const Menu = () => {
   if (items.length === 0) {
     return <div className="text-center mt-5">No hay ítems en el menú.</div>;
   }
-
+  
   const variants = {
-      enter: (direction) => ({
-          x: direction > 0 ? 1000 : -1000,
-          opacity: 0,
-      }),
-      center: {
-          x: 0,
-          opacity: 1,
-      },
-      exit: (direction) => ({
-          x: direction < 0 ? 1000 : -1000,
-          opacity: 0,
-      })
+    enter: (direction) => ({
+      x: direction > 0 ? "100%" : "-100%",
+      opacity: 0,
+    }),
+    center: {
+      x: "0%",
+      opacity: 1,
+    },
+    exit: (direction) => ({
+      x: direction < 0 ? "100%" : "-100%",
+      opacity: 0,
+    }),
   };
 
   return (
@@ -103,12 +102,14 @@ const Menu = () => {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          overflow: "hidden", // Prevents content from overflowing during drag
+          position: "relative",
+          overflow: "hidden",
         }}
       >
         <AnimatePresence initial={false}>
           <motion.div
             key={currentPage}
+            custom={1}
             variants={variants}
             initial="enter"
             animate="center"
@@ -120,23 +121,19 @@ const Menu = () => {
               x: { type: "spring", stiffness: 300, damping: 30 },
               opacity: { duration: 0.2 },
             }}
+            style={{ position: "absolute", width: "100%", height: "100%", top: "0%", left: "0%" }}
           >
-            <div>
-              <Row xs={1} md={2} className="g-4">
-                {currentItems.map((item) => (
-                  <MenuItem key={item.id} item={item} />
-                ))}
-              </Row>
+            <div className="d-flex flex-column justify-content-between h-100">
+                <div>
+                  <Row xs={1} md={2} className="g-4">
+                    {currentItems.map((item) => (
+                      <MenuItem key={item.id} item={item} />
+                    ))}
+                  </Row>
+                </div>
             </div>
           </motion.div>
         </AnimatePresence>
-
-        <MenuControls
-          totalPages={totalPages}
-          currentPage={currentPage}
-          nextPage={() => setCurrentPage((prev) => (prev + 1) % totalPages)}
-          prevPage={() => setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages)}
-        />
       </div>
     </div>
   );
