@@ -3,13 +3,13 @@ import { Spinner, Row } from "react-bootstrap";
 import { getMenuItems } from "./services/menuService";
 import MenuItem from "./components/MenuItem";
 import MenuControls from "./components/MenuControls";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Menu = () => {
   const [items, setItems] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [animating, setAnimating] = useState(false); // Nuevo estado para la animación
 
   const itemsPerPage = 4;
 
@@ -29,25 +29,15 @@ const Menu = () => {
 
   const totalPages = Math.ceil(items.length / itemsPerPage);
 
-  // Función para manejar el cambio de página con animación
-  const handlePageChange = (newPage) => {
-    if (animating) return; // Evita cambios rápidos mientras se anima
+  const handleDragEnd = (event, info) => {
+    const dragThreshold = 50; // Pixels to trigger a page change
+    const dragDirection = info.offset.x;
 
-    setAnimating(true); // Inicia la animación de salida
-    setTimeout(() => {
-      setCurrentPage(newPage); // Cambia la página después de que la animación de salida empiece
-      setAnimating(false); // Termina la animación (la de entrada se maneja en el CSS)
-    }, 300); // Duración de la animación de desvanecimiento (0.3s)
-  };
-
-  const nextPage = () => {
-    const newPage = (currentPage + 1) % totalPages;
-    handlePageChange(newPage);
-  };
-
-  const prevPage = () => {
-    const newPage = (currentPage - 1 + totalPages) % totalPages;
-    handlePageChange(newPage);
+    if (dragDirection > dragThreshold) {
+      setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
+    } else if (dragDirection < -dragThreshold) {
+      setCurrentPage((prev) => (prev + 1) % totalPages);
+    }
   };
 
   const startIndex = currentPage * itemsPerPage;
@@ -76,6 +66,21 @@ const Menu = () => {
     return <div className="text-center mt-5">No hay ítems en el menú.</div>;
   }
 
+  const variants = {
+      enter: (direction) => ({
+          x: direction > 0 ? 1000 : -1000,
+          opacity: 0,
+      }),
+      center: {
+          x: 0,
+          opacity: 1,
+      },
+      exit: (direction) => ({
+          x: direction < 0 ? 1000 : -1000,
+          opacity: 0,
+      })
+  };
+
   return (
     <div
       className="d-flex flex-column align-items-center p-4"
@@ -92,31 +97,45 @@ const Menu = () => {
           backgroundColor: "#f8f9fa",
           borderRadius: "10px",
           boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-          minHeight: "600px", // Mantener una altura mínima para evitar saltos
+          minHeight: "600px",
           width: "100%",
           maxWidth: "600px",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between", // Empuja los botones abajo
+          justifyContent: "space-between",
+          overflow: "hidden", // Prevents content from overflowing during drag
         }}
       >
-        <div
-          className={`menu-page-transition ${animating ? "fade-out" : "fade-in"}`}
-          style={{ width: "100%" }}
-        >
-          <Row xs={1} md={2} className="g-4">
-            {currentItems.map((item) => (
-              <MenuItem key={item.id} item={item} />
-            ))}
-          </Row>
-        </div>
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={currentPage}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            onDragEnd={handleDragEnd}
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 },
+            }}
+          >
+            <div>
+              <Row xs={1} md={2} className="g-4">
+                {currentItems.map((item) => (
+                  <MenuItem key={item.id} item={item} />
+                ))}
+              </Row>
+            </div>
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Los controles ahora son parte del contenedor de página */}
         <MenuControls
           totalPages={totalPages}
           currentPage={currentPage}
-          nextPage={nextPage}
-          prevPage={prevPage}
+          nextPage={() => setCurrentPage((prev) => (prev + 1) % totalPages)}
+          prevPage={() => setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages)}
         />
       </div>
     </div>
